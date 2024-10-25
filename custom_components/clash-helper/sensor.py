@@ -107,15 +107,16 @@ class DataRateSensor(CoordinatorEntity, SensorEntity):
     _attr_state_class = "measurement"
     _attr_device_class = "data_rate"
     _attr_should_poll = False
+    _attr_has_entity_name = True
 
-    def __init__(self, sensor_name, coordinator, up_down):
+    def __init__(self,sensor_name, coordinator, up_down):
         super().__init__(coordinator, context=up_down)
         self._attr_unique_id = sensor_name
         self.up_down = up_down
-        
+      
 
     @property
-    def native_value(self):
+    def state(self):
         return round(self.coordinator.data[self.up_down]/1024,2)
 
     @property
@@ -142,6 +143,17 @@ class TotalLoadSensor(CoordinatorEntity, SensorEntity):
     @property
     def available(self):
         return bool(self.coordinator.data)
+    
+    @property
+    def state_attributes(self): 
+        attrs = {}
+        data = self.coordinator.data
+        if self.coordinator.data.get(self.kind + "_attrs"):
+            attrs = self.coordinator.data[self.kind + "_attrs"]
+        if data:            
+            attrs["querytime"] = data["querytime"]        
+        return attrs  
+
     
 class ConnectionNumberSensor(CoordinatorEntity, SensorEntity):
     #_attr_native_unit_of_measurement = "kB"
